@@ -34,7 +34,7 @@ export class CellComponent implements OnInit {
 
   setPath = () : void=> {
     if (!this.isStart && !this.isFinish) {
-      this.cell.nativeElement.style.animation = "foundAnimation 0.3s forwards";
+      this.cell.nativeElement.style.backgroundColor = "#ebd197";
     }
 
     this.inPath = true;

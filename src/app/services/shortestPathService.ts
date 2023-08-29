@@ -96,6 +96,5 @@ export class ShortestPathService {
         return neighboursIdx;
     }
 
-
     private delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 }
