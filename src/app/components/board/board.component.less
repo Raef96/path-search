@@ -1,0 +1,78 @@
+table {
+    margin: auto;
+    //border-spacing: 0px;
+    border-collapse: collapse;
+    background-color: transparent;
+
+    & td {
+        width: 25px;
+        height: 25px;
+    }
+}
+
+
+.cell {
+    border: @border;
+    border-radius: 1px;
+    height: 100%;
+    width: 100%;
+    transition: 1s ease-in;
+
+
+    &.start {
+        background-color: green;
+    }
+
+    &.finish {
+        background-color: red;
+    }
+
+    &.path {
+        background-color: azure;
+    }
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+@keyframes foundAnimation {
+    0% {
+        background: #a2790d;
+        border-radius: 10px;
+        transform: scale(1.2);
+    }
+
+    50% {
+        border-radius: 8px;
+        transform: scale(1.1);
+        background: #b48811;
+    }
+
+    100% {
+        border-radius: 7px;
+        transform: scale(1);
+        background: #ebd197;
+    }
+}
+
+@border: 1px solid rgb(175, 216, 248);
+
+
+@keyframes wallAnimation {
+    0% {
+        transform: scale(.3);
+        background-color: rgb(10, 50, 70);
+    }
+
+    50% {
+        transform: scale(1.2);
+        background-color: rgb(10, 50, 70);
+    }
+
+    100% {
+        transform: scale(1);
+        background-color: rgb(10, 50, 70);
+        border: 1px solid rgb(11, 52, 71);
+    }
+}
