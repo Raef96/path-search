@@ -8,11 +8,12 @@ import { Component, ElementRef, HostListener, Input, OnInit, ViewChild } from '@
 export class CellComponent implements OnInit {
 
   @Input() index: number = -1;
-  @Input() isStart: boolean = true;
+  @Input() isStart: boolean = false;
   @Input() isFinish: boolean = false;
   @Input() isMousePressed: boolean = false;
 
   @ViewChild('div') cell!: ElementRef<HTMLElement>;
+  @ViewChild('pointer') pointer!: ElementRef<HTMLElement>;
 
   public isWall: boolean = false;
   public isVisited: boolean = false;
@@ -32,7 +33,7 @@ export class CellComponent implements OnInit {
     this.isVisited = true;
   }
 
-  setPath = () : void=> {
+  setPath = (): void => {
     if (!this.isStart && !this.isFinish) {
       this.cell.nativeElement.style.backgroundColor = "#ebd197";
     }
@@ -41,9 +42,10 @@ export class CellComponent implements OnInit {
   }
 
   getCellType = (): string => {
-    return 'cell' + (this.isStart ? ' start' :
-      this.isFinish ? ' finish' :
-        this.inPath ? ' path' : '');
+    return 'cell' +
+      (this.isStart ? ' start' :
+        this.isFinish ? ' finish' :
+          this.inPath ? ' path' : '');
   }
 
 
