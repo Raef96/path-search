@@ -1,83 +1,97 @@
-table {
-    margin: auto;
-    //border-spacing: 0px;
-    border-collapse: collapse;
-    background-color: transparent;
-
-    & td {
-        width: 25px;
-        height: 25px;
-    }
-}
-
-.group-container{
-  display: flex;
-  flex-wrap: wrap;
-  margin-left: 20px;
-}
-
-.cell {
-    border: @border;
-    border-radius: 1px;
-
-    height: 100%;
-    width: 100%;
-    transition: 1s ease-in;
-
-
-    &.start {
-        background-color: green;
-    }
-
-    &.finish {
-        background-color: red;
-    }
-
-    &.path {
-        background-color: azure;
-    }
-
-    &:hover {
-        cursor: pointer;
-    }
-}
-
-@keyframes found {
-    0% {
-        background: #a2790d;
-        border-radius: 10px;
-        transform: scale(1.2);
-    }
-
-    50% {
-        border-radius: 8px;
-        transform: scale(1.1);
-        background: #b48811;
-    }
-
-    100% {
-        border-radius: 7px;
-        transform: scale(1);
-        background: #ebd197;
-    }
-}
 
 @border: 1px solid rgb(175, 216, 248);
 
-@keyframes wallAnimation {
-    0% {
-        transform: scale(.3);
-        background-color: rgb(10, 50, 70);
-    }
+.board-container{
+  display: flex;
+  flex-wrap: wrap;
+  margin: 12px;
+}
 
-    50% {
-        transform: scale(1.2);
-        background-color: rgb(10, 50, 70);
-    }
+.board{
+  width: 1182px;
+  height: 600px;
+  display: flex;
+  flex-wrap: wrap;
+}
 
-    100% {
-        transform: scale(1);
-        background-color: rgb(10, 50, 70);
-        border: 1px solid rgb(11, 52, 71);
-    }
+.cell{
+  border: @border;
+  border-radius: 1px;
+  width: 24px;
+  height: 24px;
+
+  .start {
+    border-radius: 100%;
+    height: 100%;
+    width: 100%;
+    background-color: green;
+  }
+
+  .finish {
+    border-radius: 100%;
+    height: 100%;
+    width: 100%;
+    background-color: red;
+  }
+}
+
+@keyframes search-animation {
+  0% {
+    background-color: rgb(255, 254, 106);
+  }
+
+  10% {
+    transform: scale(.3);
+    background-color: rgba(0, 0, 66, 0.75);
+    border-radius: 100%;
+  }
+
+  50% {
+    background-color: rgba(17, 104, 217, 0.75);
+  }
+
+  75% {
+    transform: scale(1.2);
+    background-color: rgba(0, 217, 159, 0.75)
+  }
+
+  100% {
+    transform: scale(1.0);
+    background-color: rgba(0, 190, 218, 0.75);
+  }
+}
+
+@keyframes wall-animation {
+  0% {
+    transform: scale(.3);
+    background-color: rgb(10, 50, 70);
+  }
+
+  50% {
+    transform: scale(1.2);
+    background-color: rgb(10, 50, 70);
+  }
+
+  100% {
+    transform: scale(1);
+    background-color: rgb(10, 50, 70);
+    border: 1px solid rgb(11, 52, 71);
+  }
+}
+
+@keyframes path-found-animation {
+  0% {
+      transform: scale(0.6);
+      background-color: rgb(255, 254, 106);
+  }
+
+  50% {
+      transform: scale(1.2);
+      background-color: rgb(255, 254, 106);
+  }
+
+  100% {
+      transform: scale(1);
+      background-color: rgb(255, 254, 106);
+  }
 }

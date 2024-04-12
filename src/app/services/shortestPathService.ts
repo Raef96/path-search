@@ -1,10 +1,12 @@
 import { Observable, Subject } from "rxjs";
 
 export interface Cell {
-  index: number;
-  isVisited: boolean;
-  isWall: boolean;
-  parentIdx: number;
+  index: number
+  isVisited: boolean
+  isWall: boolean
+  parentIdx: number
+  isStart?: boolean
+  isFinish?: boolean
 }
 
 export enum SearchSpeed {
@@ -71,7 +73,7 @@ export class ShortestPathService {
   }
 
   private shortestPath = (): number[] => {
-    let cellsPathIdx = [];
+    let cellsPathIdx: number[] = [];
     let cellIdx = this.finishIdx;
     let count = 0;
     while (cellIdx != this.startIdx && count < this.width * this.height) {
@@ -86,12 +88,16 @@ export class ShortestPathService {
   private getNeighbours = (cellIdx: number) => {
     let x = Math.floor(cellIdx / this.width);
     let y = cellIdx % this.width;
-    let neighboursIdx = [];
+    let neighboursIdx: number[] = [];
 
-    if (x - 1 >= 0 && !this.cells[(x - 1) * this.width + y].isWall) neighboursIdx.push((x - 1) * this.width + y);
-    if (x + 1 < this.height && !this.cells[(x + 1) * this.width + y].isWall) neighboursIdx.push((x + 1) * this.width + y);
-    if (y - 1 >= 0 && !this.cells[cellIdx - 1].isWall) neighboursIdx.push(cellIdx - 1);
-    if (y + 1 < this.width && !this.cells[cellIdx + 1].isWall) neighboursIdx.push(cellIdx + 1);
+    if (x - 1 >= 0 && !this.cells[(x - 1) * this.width + y].isWall) // up
+      neighboursIdx.push((x - 1) * this.width + y);
+    if (y + 1 < this.width && !this.cells[cellIdx + 1].isWall) // right
+      neighboursIdx.push(cellIdx + 1);
+    if (x + 1 < this.height && !this.cells[(x + 1) * this.width + y].isWall) // down
+      neighboursIdx.push((x + 1) * this.width + y);
+    if (y - 1 >= 0 && !this.cells[cellIdx - 1].isWall) // left
+      neighboursIdx.push(cellIdx - 1);
 
     return neighboursIdx;
   }
