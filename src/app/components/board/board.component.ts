@@ -1,6 +1,7 @@
-import { AfterViewInit, Component} from '@angular/core';
+import { AfterViewInit, Component, Input } from '@angular/core';
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { Cell, SearchSpeed, ShortestPathService } from '../../services/shortestPathService';
+import { Algorithms } from '../../constants/algorithms';
 
 
 const CELL_WIDTH = 25.6;
@@ -14,39 +15,39 @@ const CELLS_COUNT = 1104;
 })
 export class BoardComponent implements AfterViewInit {
 
+
+  @Input() selectedAlgorithm: string = Algorithms.BFS;
+
   height: number = 24;
   width: number = 46;
   startIdx: number = 0;
   finishIdx: number = CELLS_COUNT - 1;
-  cellsIdx: number[] = Array(this.height * this.width);
   cells: Cell[] = Array<Cell>(CELLS_COUNT);
 
-  private shortPathService!: ShortestPathService;
   private isMouseDown: boolean = false;
   private isDragging = false;
+  private searchInProgress: boolean = false;
 
-  constructor() {
-    this.shortPathService = new ShortestPathService(this.cells, this.startIdx, this.finishIdx, this.width, this.height);
+  constructor(private shortestPathService: ShortestPathService) {
     for (let i = 0; i < CELLS_COUNT; ++i) {
-      this.cellsIdx[i] = i;
       this.cells[i] = {
         index: i,
         isVisited: false,
         isWall: false,
         parentIdx: -1
       };
-
-      if (i == 0) this.cells[0].isStart = true;
-      if (i == CELLS_COUNT - 1) this.cells[CELLS_COUNT - 1].isFinish = true;
     }
+
+    this.cells[0].isStart = true;
+    this.cells[CELLS_COUNT - 1].isFinish = true;
   }
 
   ngAfterViewInit(): void {
     console.log("after view init");
-    this.initializeMouseEvents();
+    this.initMouseEvents();
     //this.setBoardDimensions();
 
-    this.shortPathService.visitedCellIdx.subscribe((cellIdx) => {
+    this.shortestPathService.visitedCell.subscribe((cellIdx) => {
       if (cellIdx == this.startIdx)
         return;
 
@@ -55,7 +56,7 @@ export class BoardComponent implements AfterViewInit {
       this.cells[cellIdx].isVisited = true;
     });
 
-    this.shortPathService.shortPath.subscribe((cellIdx) => {
+    this.shortestPathService.path.subscribe((cellIdx) => {
       if (cellIdx == this.finishIdx)
         return;
 
@@ -64,65 +65,49 @@ export class BoardComponent implements AfterViewInit {
     })
   }
 
+  visualizeSearch = async (): Promise<void> => {
+    if (this.searchInProgress)
+      return;
 
-  initializeMouseEvents = () => {
-    const allCells = Array.from(document.getElementsByClassName('cellIdx'));
-    allCells.forEach(cell => {
-      cell.addEventListener('mousedown', () => {
-        let isStartPoint = +cell.id === this.startIdx;
-        let isFinishPoint = +cell.id === this.finishIdx;
-        if (isStartPoint || isFinishPoint)  // we dont consider as a click down because it is handled by cdk drop library
-          return;
-
-        if (this.cells[+cell.id].isWall) {
-          this.cells[+cell.id].isWall = false;
-          (cell as HTMLElement).style.animation = '';
-        }
-        else {
-          this.cells[+cell.id].isWall = true;
-          console.log('animation');
-          (cell as HTMLElement).style.animation = 'wall-animation 0.4s forwards';
-        }
-        this.isMouseDown = true;
-      });
-
-      cell.addEventListener('mouseup', () => {
-        this.isMouseDown = false;
-      });
-
-      cell.addEventListener('mousemove', () => {
-        if (this.isDragging) // the start/finish point is moving
-          return;
-
-        if (+cell.id === this.startIdx || +cell.id === this.finishIdx)
-          return;
-
-        if (this.isMouseDown) {
-          if (this.cells[+cell.id].isWall) {
-            this.cells[+cell.id].isWall = false;
-            (cell as HTMLElement).style.animation = '';
-          }
-          else {
-            this.cells[+cell.id].isWall = true;
-            (cell as HTMLElement).style.animation = 'wall-animation 0.4s forwards';
-          }
-        }
-      });
-    });
-  }
-
-  visualizeSearch = (e: Event): void => {
-    this.shortPathService.searchSpeed = SearchSpeed.Fast;
-    this.shortPathService.cells = this.cells;
-    this.shortPathService.startIdx = this.startIdx;
-    this.shortPathService.finishIdx = this.finishIdx;
-    this.shortPathService.width = this.width;
-    this.shortPathService.height = this.height;
-    this.shortPathService.bfs();
+    this.disableMouseEvents();
+    this.shortestPathService.searchSpeed = SearchSpeed.Fast;
+    this.shortestPathService.configure(this.cells, this.startIdx, this.finishIdx, this.width, this.height);
+    this.searchInProgress = true;
+    await this.shortestPathService.bfs();
+    this.enableMouseEvents();
+    this.searchInProgress = false;
   }
 
   visualizePath(e: Event) {
-    this.shortPathService.getShortPath();
+    if (this.searchInProgress)
+      return;
+
+    this.shortestPathService.getPath();
+  }
+
+  clearBoard = () => {
+    if (this.searchInProgress)
+      return;
+
+    this.cells.forEach(cell => {
+      let cellEl = document.getElementById(cell.index.toString());
+      cellEl!.style.animation = "";
+      cell.isVisited = false;
+      cell.isWall = false;
+      cell.parentIdx = -1;
+    });
+  }
+
+  clearWalls = () => {
+    this.cells.forEach(cell => {
+      if (!cell.isWall)
+        return;
+      let cellEl = document.getElementById(cell.index.toString());
+      cellEl!.style.animation = "";
+      cell.isVisited = false;
+      cell.isWall = false;
+      cell.parentIdx = -1;
+    });
   }
 
   setBoardDimensions = () => {
@@ -132,7 +117,71 @@ export class BoardComponent implements AfterViewInit {
     console.log(boardEl, boardEl.offsetWidth / CELL_WIDTH, this.width, this.height);
   }
 
-  //#region: drag and drop functionality
+  //#region : Mouse Events
+  initMouseEvents = () => {
+    const allCells = Array.from(document.getElementsByClassName('cell'));
+    allCells.forEach(cell => {
+      cell.addEventListener('mouseup', () => this.isMouseDown = false);
+      cell.addEventListener('mousedown', () => this.mouseDownEvent(cell as HTMLElement));
+      cell.addEventListener('mousemove', () => this.mouseMoveEvent(cell as HTMLElement));
+    });
+  }
+
+  private mouseDownEvent = (cell: HTMLElement) => {
+    let isStartPoint = +cell.id === this.startIdx;
+    let isFinishPoint = +cell.id === this.finishIdx;
+    if (isStartPoint || isFinishPoint)  // we dont consider as a click down because it is handled by cdk drop library
+      return;
+
+    if (this.cells[+cell.id].isWall) {
+      this.cells[+cell.id].isWall = false;
+      cell.style.animation = '';
+    }
+    else {
+      this.cells[+cell.id].isWall = true;
+      cell.style.animation = 'wall-animation 0.4s forwards';
+    }
+    this.isMouseDown = true;
+  }
+
+  private mouseMoveEvent = (cell: HTMLElement) => {
+    if (this.isDragging) // the start/finish point is moving
+      return;
+
+    if (+cell.id === this.startIdx || +cell.id === this.finishIdx)
+      return;
+
+    if (this.isMouseDown) {
+      if (this.cells[+cell.id].isWall) {
+        this.cells[+cell.id].isWall = false;
+        cell.style.animation = '';
+      }
+      else {
+        this.cells[+cell.id].isWall = true;
+        cell.style.animation = 'wall-animation 0.4s forwards';
+      }
+    }
+  }
+
+  private disableMouseEvents = (): void => {
+    document.addEventListener('mouseup', this.disableMouseEvent, true);
+    document.addEventListener('mousedown', this.disableMouseEvent, true);
+    document.addEventListener('mousemove', this.disableMouseEvent, true);
+  }
+
+  private enableMouseEvents = (): void => {
+    document.removeEventListener('mouseup', this.disableMouseEvent, true);
+    document.removeEventListener('mousedown', this.disableMouseEvent, true);
+    document.removeEventListener('mousemove', this.disableMouseEvent, true);
+  }
+
+  private disableMouseEvent = (event: MouseEvent): void => {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  //#endregion
+
+  //#region : drag and drop functionality
   onDragStarted = () => {
     this.isDragging = true;
   }
