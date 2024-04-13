@@ -1,3 +1,4 @@
+import { Injectable } from "@angular/core";
 import { Observable, Subject } from "rxjs";
 
 export interface Cell {
@@ -15,39 +16,49 @@ export enum SearchSpeed {
   Slow = 100,
 }
 
+@Injectable({
+  providedIn: 'root'
+})
 export class ShortestPathService {
-  public cells: Cell[];
-  public startIdx: number;
-  public finishIdx: number;
-  public height: number;
-  public width: number;
-  public searchSpeed: SearchSpeed = SearchSpeed.Fast;
-
-  public shortPath: Observable<number>;
-  public visitedCellIdx: Observable<number>;
-
+  private _path: Subject<number>;
   private _vistedCell: Subject<number>;
-  private _shortPath: Subject<number>;
+  private _isConfigured: boolean = false;
 
+  path: Observable<number>;
+  visitedCell: Observable<number>;
 
-  constructor(cells: Cell[], startIdx: number, finishIdx: number, width: number, height: number) {
+  cells: Cell[] = [];
+  startIdx: number = -1;
+  finishIdx: number = -1;
+  height: number = -1;
+  width: number = -1;
+  searchSpeed: SearchSpeed = SearchSpeed.Fast;
+
+  constructor() {
+    this._vistedCell = new Subject<number>();
+    this.visitedCell = this._vistedCell.asObservable();
+    this._path = new Subject<number>();
+    this.path = this._path.asObservable();
+  }
+
+  configure(cells: Cell[], startIdx: number, finishIdx: number, width: number, height: number) {
     this.cells = cells;
     this.startIdx = startIdx;
     this.finishIdx = finishIdx;
     this.height = height;
     this.width = width;
 
-    this._vistedCell = new Subject<number>();
-    this.visitedCellIdx = this._vistedCell.asObservable();
-    this._shortPath = new Subject<number>();
-    this.shortPath = this._shortPath.asObservable();
+    this._isConfigured = this.isConfigured();
   }
 
-  bfs = async () => {
-    let queue: number[] = [this.startIdx];
+  bfs = async (): Promise<boolean> => {
+    if (!this._isConfigured)
+      throw new Error("The service in not well configured.");
 
+    let cellIdx = -1;
+    let queue: number[] = [this.startIdx];
     while (queue.length > 0) {
-      let cellIdx = queue.shift()!;
+      cellIdx = queue.shift()!;
       if (cellIdx == this.finishIdx) break;
       if (this.cells[cellIdx].isVisited == true) continue;
 
@@ -57,22 +68,28 @@ export class ShortestPathService {
       let neighboursIdx = this.getNeighbours(cellIdx);
       for (let nIdx of neighboursIdx) {
         queue.push(nIdx);
-        if (this.cells[nIdx].parentIdx == -1) this.cells[nIdx].parentIdx = cellIdx;
+        if (this.cells[nIdx].parentIdx == -1)
+          this.cells[nIdx].parentIdx = cellIdx;
       }
 
       await this.delay(this.searchSpeed);
     }
+
+    return cellIdx == this.finishIdx;
   }
 
-  getShortPath = async (): Promise<void> => {
-    let path = this.shortestPath();
+  getPath = async (): Promise<void> => {
+    if (!this._isConfigured)
+      throw new Error("The service in not well configured.");
+
+    let path = this.findPath();
     for (let cellIdx of path) {
-      this._shortPath.next(cellIdx);
+      this._path.next(cellIdx);
       await this.delay(100);
     }
   }
 
-  private shortestPath = (): number[] => {
+  private findPath = (): number[] => {
     let cellsPathIdx: number[] = [];
     let cellIdx = this.finishIdx;
     let count = 0;
@@ -85,7 +102,7 @@ export class ShortestPathService {
     return cellsPathIdx.reverse();
   }
 
-  private getNeighbours = (cellIdx: number) => {
+  private getNeighbours = (cellIdx: number) : number[] => {
     let x = Math.floor(cellIdx / this.width);
     let y = cellIdx % this.width;
     let neighboursIdx: number[] = [];
@@ -101,6 +118,14 @@ export class ShortestPathService {
 
     return neighboursIdx;
   }
+
+  private isConfigured = (): boolean =>
+    this.cells != null &&
+    this.cells.length >= 2 &&
+    this.startIdx >= 0 &&
+    this.finishIdx >= 0 &&
+    this.width > 0 &&
+    this.height > 0;
 
   private delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 }
