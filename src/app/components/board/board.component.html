@@ -1,13 +1,21 @@
 <p>board works!</p>
-<button (click)="shortPath($event)">Search</button>
-<button (click)="searchMap($event)">Short Path Service</button>
+<button (click)="visualizePath($event)">Short Path</button>
+<button (click)="visualizeSearch($event)">Search</button>
 <hr/>
-<table class="container">
-    <tr *ngFor="let r of rows" id={{r}}>
-        <td *ngFor="let c of columns" id="{{r * width + c}}">
-            <app-cell [isStart]="r*width+c == startIdx" [isFinish]="r*width+c == finishIdx" [index]="r * width + c"
-                [isMousePressed]="isMousePressed()" 
-                #cell></app-cell>
-        </td>
-    </tr>
-</table>
+<div class="board-container" >
+  <div class="board" cdkDropListGroup>
+    <div
+      class="cell"
+      *ngFor="let cell of cells; let i = index"
+      id = "{{i}}"
+      cdkDropList
+      (cdkDropListDropped)="drop($event)"
+      [cdkDropListData]="i"
+      [cdkDropListEnterPredicate]="enterPredicate"
+    >
+      <div [ngClass]="cell.isStart ? 'start' : 'finish'" *ngIf="cell.isStart || cell.isFinish" cdkDrag  (cdkDragStarted)="onDragStarted()" (cdkDragEnded)="onDragEnded()">
+        <div class="preview" *cdkDragPreview></div>
+      </div>
+    </div>
+</div>
+</div>
