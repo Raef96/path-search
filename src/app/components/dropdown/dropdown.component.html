@@ -1,0 +1,5 @@
+<select class="dropdown" [disabled]="isDisabled" (change)="select($event)">
+  <option *ngFor="let option of options" [value]="option.id"  [selected]="isSelected(option)">
+    {{option.label}}
+  </option>
+</select>
