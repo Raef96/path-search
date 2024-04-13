@@ -6,7 +6,7 @@ import { Algorithms } from '../../constants/algorithms';
 
 const CELL_WIDTH = 25.6;
 const CELL_HEIGHT = 25.6;
-const CELLS_COUNT = 1104;
+const CELLS_COUNT = 58 * 24; // width * height
 
 @Component({
   selector: 'board',
@@ -19,7 +19,7 @@ export class BoardComponent implements AfterViewInit {
   @Input() selectedAlgorithm: string = Algorithms.BFS;
 
   height: number = 24;
-  width: number = 46;
+  width: number = 58;
   startIdx: number = 0;
   finishIdx: number = CELLS_COUNT - 1;
   cells: Cell[] = Array<Cell>(CELLS_COUNT);
@@ -76,9 +76,12 @@ export class BoardComponent implements AfterViewInit {
     await this.shortestPathService.bfs();
     this.enableMouseEvents();
     this.searchInProgress = false;
+    if (this.shortestPathService.pathIsFound){
+      this.visualizePath();
+    }
   }
 
-  visualizePath(e: Event) {
+  visualizePath() {
     if (this.searchInProgress)
       return;
 

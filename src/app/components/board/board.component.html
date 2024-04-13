@@ -1,21 +1,11 @@
-<button (click)="visualizePath($event)">Short Path</button>
-<button (click)="visualizeSearch()">Search</button>
-<button (click)="clearBoard()">clear</button>
-<hr/>
-<div class="board-container" >
+<div class="board-container">
   <div class="board" cdkDropListGroup>
-    <div
-      class="cell"
-      *ngFor="let cell of cells; let i = index"
-      id = "{{i}}"
-      cdkDropList
-      (cdkDropListDropped)="drop($event)"
-      [cdkDropListData]="i"
-      [cdkDropListEnterPredicate]="enterPredicate"
-    >
-      <div [ngClass]="cell.isStart ? 'start' : 'finish'" *ngIf="cell.isStart || cell.isFinish" cdkDrag  (cdkDragStarted)="onDragStarted()" (cdkDragEnded)="onDragEnded()">
+    <div class="cell" *ngFor="let cell of cells; let i = index" id="{{i}}" cdkDropList
+      (cdkDropListDropped)="drop($event)" [cdkDropListData]="i" [cdkDropListEnterPredicate]="enterPredicate">
+      <div [ngClass]="cell.isStart ? 'start' : 'finish'" *ngIf="cell.isStart || cell.isFinish" cdkDrag
+        (cdkDragStarted)="onDragStarted()" (cdkDragEnded)="onDragEnded()">
         <div class="preview" *cdkDragPreview></div>
       </div>
     </div>
-</div>
+  </div>
 </div>
