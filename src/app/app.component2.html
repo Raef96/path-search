@@ -1,0 +1,40 @@
+<div class="navbar">
+  <div class="container-fluid">
+
+    <div class="navbar-header">
+      <a id="refreshButton" class="navbar-brand" href="">Pathfinding Visualizer</a>
+    </div>
+
+    <div class="navbar-nav">
+      <div class="">
+        <label for="options">Mazes patterns: </label>
+        <app-dropdown [options]="mazeOptions" [disabled]="true"/>
+      </div>
+      <button (click)="generateMaze()">Generate maze</button>
+
+      <div class="">
+        <label for="options">Algorithms: </label>
+        <app-dropdown [options]="algorithmOptions" (changed)="selectAlgorithm($event)" #algo/>
+      </div>
+
+      <!-- Visualize -->
+      <button (click)="visualize($event)">Visualize!
+      </button>
+
+      <button (click)="clearBoard()">Clear board</button>
+      <!-- <button>Clear Walls</button> -->
+
+    </div>
+
+    <!-- github link -->
+    <div class="links">
+      <a class="header-link" href="" target="_blank">
+        <!-- <img src="../../src/GitHub-Mark-Light-32px.png"> -->
+         github
+      </a>
+    </div>
+  </div>
+
+</div>
+<hr />
+<board #board></board>
