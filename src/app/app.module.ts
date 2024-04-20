@@ -5,18 +5,14 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import { AppComponent } from './app.component';
 import { BoardComponent } from './components/board/board.component';
-import { SelectDirective } from './directives/select.directive';
-import { CellComponent } from './components/cell/cell.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { PointerComponent } from './components/pointer/pointer.component';
+import { DropdownComponent } from './components/dropdown/dropdown.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     BoardComponent,
-    SelectDirective,
-    CellComponent,
-    PointerComponent
+    DropdownComponent
   ],
   imports: [
     BrowserModule,

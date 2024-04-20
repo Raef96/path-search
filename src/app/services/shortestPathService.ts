@@ -3,11 +3,17 @@ import { Observable, Subject } from "rxjs";
 
 export interface Cell {
   index: number
-  isVisited: boolean
-  isWall: boolean
   parentIdx: number
+  isWall?: boolean
   isStart?: boolean
   isFinish?: boolean
+  isVisited?: boolean
+}
+
+export const defaultCell: Partial<Cell> = {
+  parentIdx: -1,
+  isWall: false,
+  isVisited: false,
 }
 
 export enum SearchSpeed {
@@ -24,6 +30,7 @@ export class ShortestPathService {
   private _vistedCell: Subject<number>;
   private _isConfigured: boolean = false;
 
+
   path: Observable<number>;
   visitedCell: Observable<number>;
 
@@ -33,6 +40,8 @@ export class ShortestPathService {
   height: number = -1;
   width: number = -1;
   searchSpeed: SearchSpeed = SearchSpeed.Fast;
+  pathIsFound: boolean = false;
+
 
   constructor() {
     this._vistedCell = new Subject<number>();
@@ -51,7 +60,7 @@ export class ShortestPathService {
     this._isConfigured = this.isConfigured();
   }
 
-  bfs = async (): Promise<boolean> => {
+  bfs = async (): Promise<void> => {
     if (!this._isConfigured)
       throw new Error("The service in not well configured.");
 
@@ -74,8 +83,7 @@ export class ShortestPathService {
 
       await this.delay(this.searchSpeed);
     }
-
-    return cellIdx == this.finishIdx;
+    this.pathIsFound = cellIdx == this.finishIdx;
   }
 
   getPath = async (): Promise<void> => {
@@ -95,7 +103,7 @@ export class ShortestPathService {
     let count = 0;
     while (cellIdx != this.startIdx && count < this.width * this.height) {
       cellsPathIdx.push(cellIdx);
-      cellIdx = this.cells[cellIdx].parentIdx;
+      cellIdx = this.cells[cellIdx].parentIdx!;
       count++;
     }
 

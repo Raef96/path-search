@@ -1,3 +1,32 @@
-.dropdown{
-  width: 150px;
+select {
+  font-weight: bold;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  color: #282a2a;
+  border-radius: 2px;
+  background-color: #c5d9e7;
+  cursor: pointer;
+
+  &:hover{
+    border-color:#999;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #999;
+    box-shadow: 0 0 5px rgba(21, 31, 46, 0.926);
+  }
+
+  option {
+    background-color: transparent;
+    color: #344149;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 100%;
+
+    &:hover {
+      background-color: #f1f1f1; /* Light grey background on hover */
+      cursor: pointer;
+    }
+  }
 }
