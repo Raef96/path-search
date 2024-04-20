@@ -3,11 +3,17 @@ import { Observable, Subject } from "rxjs";
 
 export interface Cell {
   index: number
-  isVisited: boolean
-  isWall: boolean
   parentIdx: number
+  isWall?: boolean
   isStart?: boolean
   isFinish?: boolean
+  isVisited?: boolean
+}
+
+export const defaultCell: Partial<Cell> = {
+  parentIdx: -1,
+  isWall: false,
+  isVisited: false,
 }
 
 export enum SearchSpeed {
@@ -97,7 +103,7 @@ export class ShortestPathService {
     let count = 0;
     while (cellIdx != this.startIdx && count < this.width * this.height) {
       cellsPathIdx.push(cellIdx);
-      cellIdx = this.cells[cellIdx].parentIdx;
+      cellIdx = this.cells[cellIdx].parentIdx!;
       count++;
     }
 
