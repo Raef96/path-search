@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 export interface Option {
-  id: string
+  id: number
   label: string
 }
 
@@ -22,7 +22,7 @@ export class DropdownComponent {
     this.selectedOption != null && this.selectedOption.id == option.id;
 
   select = (event: Event) => {
-    let selectedValue = (event.target as HTMLSelectElement).value;
+    let selectedValue = parseInt((event.target as HTMLSelectElement).value);
     this.selectedOption = this.options.filter(opt => opt.id == selectedValue)[0];
     this.changed.emit(this.selectedOption);
   }
