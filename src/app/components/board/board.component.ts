@@ -1,7 +1,9 @@
 import { AfterViewInit, Component, Input } from '@angular/core';
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
-import { Cell, SearchSpeed, ShortestPathService } from '../../services/shortestPathService';
+import { Cell, SearchSpeed, ShortestPathService, defaultCell } from '../../services/shortestPathService';
 import { Algorithms } from '../../constants/algorithms';
+import { MazeGeneratorService } from '../../services/maze-generator.service';
+import { MazeType, Orientation } from '../../constants/mazes';
 
 
 const CELL_WIDTH = 25.6;
@@ -15,31 +17,25 @@ const CELLS_COUNT = 58 * 24; // width * height
 })
 export class BoardComponent implements AfterViewInit {
 
-
   @Input() selectedAlgorithm: string = Algorithms.BFS;
 
   height: number = 24;
   width: number = 58;
-  startIdx: number = 0;
-  finishIdx: number = CELLS_COUNT - 1;
+  startIdx: number = 456;
+  finishIdx: number = 827;
   cells: Cell[] = Array<Cell>(CELLS_COUNT);
 
   private isMouseDown: boolean = false;
   private isDragging = false;
   private searchInProgress: boolean = false;
 
-  constructor(private shortestPathService: ShortestPathService) {
-    for (let i = 0; i < CELLS_COUNT; ++i) {
-      this.cells[i] = {
-        index: i,
-        isVisited: false,
-        isWall: false,
-        parentIdx: -1
-      };
-    }
-
-    this.cells[0].isStart = true;
-    this.cells[CELLS_COUNT - 1].isFinish = true;
+  constructor(
+    private shortestPathService: ShortestPathService,
+    private mazeGeneratorService: MazeGeneratorService) {
+    let parentIdx = -1;
+    this.cells = Array.from({ length: CELLS_COUNT }, (_, index) => ({ ...defaultCell, parentIdx, index }));
+    this.cells[this.startIdx].isStart = true;
+    this.cells[this.finishIdx].isFinish = true;
   }
 
   ngAfterViewInit(): void {
@@ -76,12 +72,12 @@ export class BoardComponent implements AfterViewInit {
     await this.shortestPathService.bfs();
     this.enableMouseEvents();
     this.searchInProgress = false;
-    if (this.shortestPathService.pathIsFound){
+    if (this.shortestPathService.pathIsFound) {
       this.visualizePath();
     }
   }
 
-  visualizePath() {
+  visualizePath = () => {
     if (this.searchInProgress)
       return;
 
@@ -112,6 +108,30 @@ export class BoardComponent implements AfterViewInit {
       cell.parentIdx = -1;
     });
   }
+
+  clearSearch = (): void => {
+    this.cells.forEach(cell => {
+      if (cell.isVisited === true) {
+        let cellEl = document.getElementById(cell.index.toString());
+        cellEl!.style.animation = "";
+        cell.isVisited = false;
+        cell.parentIdx = -1;
+      }
+    });
+  }
+
+  generateMaze = async (mazeType: MazeType, orientation: Orientation = Orientation.HORIZONTAL): Promise<void> => {
+    this.clearWalls();
+    let wallsIdxToAnimate = this.mazeGeneratorService.generate(this.width, this.height, [this.startIdx, this.finishIdx], mazeType, orientation);
+    for (let idx of wallsIdxToAnimate) {
+      this.cells[idx].isWall = true;
+      await this.delay(5);
+      let el = document.getElementById(idx.toString());
+      el!.style.animation = 'wall-animation 0.4s forwards';
+    }
+  }
+
+  private delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   setBoardDimensions = () => {
     var boardEl = document.getElementsByClassName("board")[0] as HTMLElement;
