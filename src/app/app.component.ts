@@ -3,6 +3,7 @@ import { Option } from './components/dropdown/dropdown.component';
 import { Algorithms } from './constants/algorithms';
 import { BoardComponent } from './components/board/board.component';
 import { MazeType, MazeLabel } from './constants/mazes';
+import { SearchSpeed } from './services/shortestPathService';
 
 
 @Component({
@@ -27,15 +28,15 @@ export class AppComponent implements AfterViewInit {
   ];
 
   speedOptions: Option[] = [
-    { id: 0, label: "Fast" },
-    { id: 1, label: "Medium" },
-    { id: 2, label: "Slow" }
+    { id: SearchSpeed.Fast, label: "Fast" },
+    { id: SearchSpeed.Moderate, label: "Medium" },
+    { id: SearchSpeed.Slow, label: "Slow" }
   ]
 
   title = 'path-search';
   selectedAlgorithm: Option = this.algorithmOptions[0];
   selectedMaze: Option = this.mazeOptions[0];
-  selectedSpeed: Option = this.speedOptions[0];
+  selectedSpeed: SearchSpeed = this.speedOptions[0].id;
 
   constructor() {
   }
@@ -52,7 +53,7 @@ export class AppComponent implements AfterViewInit {
   }
 
   selectSpeed = (option: Option): void => {
-    this.selectedSpeed = option;
+    this.selectedSpeed = option.id;
   }
 
   visualize = async (event: Event): Promise<void> => {

@@ -50,12 +50,13 @@ export class ShortestPathService {
     this.path = this._path.asObservable();
   }
 
-  configure(cells: Cell[], startIdx: number, finishIdx: number, width: number, height: number) {
+  configure(cells: Cell[], startIdx: number, finishIdx: number, width: number, height: number, searchSpeed: SearchSpeed = SearchSpeed.Fast) {
     this.cells = cells;
     this.startIdx = startIdx;
     this.finishIdx = finishIdx;
     this.height = height;
     this.width = width;
+    this.searchSpeed = searchSpeed;
 
     this._isConfigured = this.isConfigured();
   }

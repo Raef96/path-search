@@ -18,6 +18,7 @@ const CELLS_COUNT = 58 * 24; // width * height
 export class BoardComponent implements AfterViewInit {
 
   @Input() selectedAlgorithm: string = Algorithms.BFS;
+  @Input() searchSpeed: SearchSpeed = SearchSpeed.Fast;
 
   height: number = 24;
   width: number = 58;
@@ -67,7 +68,7 @@ export class BoardComponent implements AfterViewInit {
 
     this.disableMouseEvents();
     this.shortestPathService.searchSpeed = SearchSpeed.Fast;
-    this.shortestPathService.configure(this.cells, this.startIdx, this.finishIdx, this.width, this.height);
+    this.shortestPathService.configure(this.cells, this.startIdx, this.finishIdx, this.width, this.height, this.searchSpeed);
     this.searchInProgress = true;
     await this.shortestPathService.bfs();
     this.enableMouseEvents();

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Numbers } from '../utils/numbers';
 import { MazeType, Orientation } from '../constants/mazes';
 
+
 @Injectable({
   providedIn: 'root'
 })
@@ -22,7 +23,7 @@ export class MazeGeneratorService {
     orientation: Orientation = Orientation.HORIZONTAL
   ): number[] => {
 
-    if (width <= 0 || height <= 0){
+    if (width <= 0 || height <= 0) {
       throw Error(`Invalid board dimensions (${width}, ${height}).`);
     }
 
@@ -44,7 +45,7 @@ export class MazeGeneratorService {
     return this.wallsIdx;
   }
 
-  randomMaze = (cellsCount: number, excludedCellsIdx: number[] = []) => {
+  private randomMaze = (cellsCount: number, excludedCellsIdx: number[] = []) => {
     let wallsCount = Numbers.getRandom(200, cellsCount / 2);
     for (let i = 0; i < wallsCount; ++i) {
       let idx = Numbers.getRandom(0, cellsCount - 1);
@@ -112,12 +113,14 @@ export class MazeGeneratorService {
 
       if (rowRandom - 2 - rowStart > colEnd - colStart) {
         this.recursiveMaze(rowStart, rowRandom - 2, colStart, colEnd, surroundingWalls, orientation, excludedCellsIdx);
-      } else {
+      }
+      else {
         this.recursiveMaze(rowStart, rowRandom - 2, colStart, colEnd, surroundingWalls, Orientation.VERTICAL, excludedCellsIdx);
       }
       if (rowEnd - (rowRandom + 2) > colEnd - colStart) {
         this.recursiveMaze(rowRandom + 2, rowEnd, colStart, colEnd, surroundingWalls, orientation, excludedCellsIdx);
-      } else {
+      }
+      else {
         this.recursiveMaze(rowRandom + 2, rowEnd, colStart, colEnd, surroundingWalls, Orientation.VERTICAL, excludedCellsIdx);
       }
     }
@@ -150,12 +153,14 @@ export class MazeGeneratorService {
 
       if (rowEnd - rowStart > colRandom - 2 - colStart) {
         this.recursiveMaze(rowStart, rowEnd, colStart, colRandom - 2, surroundingWalls, Orientation.HORIZONTAL, excludedCellsIdx);
-      } else {
+      }
+      else {
         this.recursiveMaze(rowStart, rowEnd, colStart, colRandom - 2, surroundingWalls, orientation, excludedCellsIdx);
       }
       if (rowEnd - rowStart > colEnd - (colRandom + 2)) {
         this.recursiveMaze(rowStart, rowEnd, colRandom + 2, colEnd, surroundingWalls, Orientation.HORIZONTAL, excludedCellsIdx);
-      } else {
+      }
+      else {
         this.recursiveMaze(rowStart, rowEnd, colRandom + 2, colEnd, surroundingWalls, orientation, excludedCellsIdx);
       }
     }
