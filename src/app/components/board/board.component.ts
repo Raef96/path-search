@@ -1,9 +1,10 @@
 import { AfterViewInit, Component, Input } from '@angular/core';
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
-import { Cell, SearchSpeed, ShortestPathService, defaultCell } from '../../services/shortestPathService';
 import { Algorithms } from '../../constants/algorithms';
-import { MazeGeneratorService } from '../../services/maze-generator.service';
 import { MazeType, Orientation } from '../../constants/mazes';
+import { Cell, defaultCell, SearchSpeed } from '../../models/cell';
+import { PathFindingService } from '../../services/path-finding.service';
+import { MazeGeneratorService } from '../../services/maze-generator.service';
 
 
 const CELL_WIDTH = 25.6;
@@ -31,7 +32,7 @@ export class BoardComponent implements AfterViewInit {
   private searchInProgress: boolean = false;
 
   constructor(
-    private shortestPathService: ShortestPathService,
+    private PathFindingService: PathFindingService,
     private mazeGeneratorService: MazeGeneratorService) {
     let parentIdx = -1;
     this.cells = Array.from({ length: CELLS_COUNT }, (_, index) => ({ ...defaultCell, parentIdx, index }));
@@ -44,7 +45,7 @@ export class BoardComponent implements AfterViewInit {
     this.initMouseEvents();
     //this.setBoardDimensions();
 
-    this.shortestPathService.visitedCell.subscribe((cellIdx) => {
+    this.PathFindingService.visitedCell.subscribe((cellIdx) => {
       if (cellIdx == this.startIdx)
         return;
 
@@ -53,7 +54,7 @@ export class BoardComponent implements AfterViewInit {
       this.cells[cellIdx].isVisited = true;
     });
 
-    this.shortestPathService.path.subscribe((cellIdx) => {
+    this.PathFindingService.path.subscribe((cellIdx) => {
       if (cellIdx == this.finishIdx)
         return;
 
@@ -67,13 +68,13 @@ export class BoardComponent implements AfterViewInit {
       return;
 
     this.disableMouseEvents();
-    this.shortestPathService.searchSpeed = SearchSpeed.Fast;
-    this.shortestPathService.configure(this.cells, this.startIdx, this.finishIdx, this.width, this.height, this.searchSpeed);
+    this.PathFindingService.searchSpeed = SearchSpeed.Fast;
+    this.PathFindingService.configure(this.cells, this.startIdx, this.finishIdx, this.width, this.height, this.searchSpeed);
     this.searchInProgress = true;
-    await this.shortestPathService.bfs();
+    await this.PathFindingService.bfs();
     this.enableMouseEvents();
     this.searchInProgress = false;
-    if (this.shortestPathService.pathIsFound) {
+    if (this.PathFindingService.pathIsFound) {
       this.visualizePath();
     }
   }
@@ -82,7 +83,7 @@ export class BoardComponent implements AfterViewInit {
     if (this.searchInProgress)
       return;
 
-    this.shortestPathService.getPath();
+    this.PathFindingService.getPath();
   }
 
   clearBoard = () => {

@@ -1,9 +1,9 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
-import { Option } from './components/dropdown/dropdown.component';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { SearchSpeed } from './models/cell';
 import { Algorithms } from './constants/algorithms';
-import { BoardComponent } from './components/board/board.component';
 import { MazeType, MazeLabel } from './constants/mazes';
-import { SearchSpeed } from './services/shortestPathService';
+import { Option } from './components/dropdown/dropdown.component';
+import { BoardComponent } from './components/board/board.component';
 
 
 @Component({

@@ -1,31 +1,12 @@
 import { Injectable } from "@angular/core";
 import { Observable, Subject } from "rxjs";
+import { Cell, SearchSpeed } from "../models/cell";
 
-export interface Cell {
-  index: number
-  parentIdx: number
-  isWall?: boolean
-  isStart?: boolean
-  isFinish?: boolean
-  isVisited?: boolean
-}
-
-export const defaultCell: Partial<Cell> = {
-  parentIdx: -1,
-  isWall: false,
-  isVisited: false,
-}
-
-export enum SearchSpeed {
-  Fast = 1,
-  Moderate = 50,
-  Slow = 100,
-}
 
 @Injectable({
   providedIn: 'root'
 })
-export class ShortestPathService {
+export class PathFindingService {
   private _path: Subject<number>;
   private _vistedCell: Subject<number>;
   private _isConfigured: boolean = false;

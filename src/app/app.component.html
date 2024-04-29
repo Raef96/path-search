@@ -3,22 +3,22 @@
     <div class="nav-header">
       <a class="logo" href="" target="_blank">
         <img src="../assets/images/icons8-labyrinth-64.png">
-         Pathfinding Visualizer
+        Pathfinding Visualizer
       </a>
     </div>
     <div class="navbar-nav">
       <div class="dropdown">
         <label for="options">Mazes patterns: </label>
-        <app-dropdown [options]="mazeOptions" (changed)="selectMaze($event)"/>
+        <app-dropdown [options]="mazeOptions" (changed)="selectMaze($event)" />
       </div>
       <button (click)="generateMaze()">Generate maze</button>
       <div class="dropdown">
         <label for="options">Algorithms: </label>
-        <app-dropdown [options]="algorithmOptions" (changed)="selectAlgorithm($event)" #algo/>
+        <app-dropdown [options]="algorithmOptions" (changed)="selectAlgorithm($event)" #algo />
       </div>
       <div class="dropdown">
         <label for="options">Search Speed: </label>
-        <app-dropdown [options]="speedOptions" (changed)="selectSpeed($event)" #algo/>
+        <app-dropdown [options]="speedOptions" (changed)="selectSpeed($event)"/>
       </div>
       <button (click)="visualize($event)">Visualize!</button>
       <button (click)="clearBoard()">Clear board</button>
@@ -29,7 +29,7 @@
     <div class="links">
       <a class="header-link" href="" target="_blank">
         <img src="../assets/images/GitHub-Mark-Light-32px.png">
-         github
+        github
       </a>
     </div>
   </div>
