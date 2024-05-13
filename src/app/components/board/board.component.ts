@@ -23,8 +23,8 @@ export class BoardComponent implements AfterViewInit {
 
   height: number = 24;
   width: number = 58;
-  startIdx: number = 456;
-  finishIdx: number = 827;
+  startIdx: number = 0;
+  finishIdx: number = 181;
   cells: Cell[] = Array<Cell>(CELLS_COUNT);
 
   private isMouseDown: boolean = false;
@@ -67,23 +67,33 @@ export class BoardComponent implements AfterViewInit {
     if (this.searchInProgress)
       return;
 
+    this.clearSearch();
     this.disableMouseEvents();
-    this.PathFindingService.searchSpeed = SearchSpeed.Fast;
     this.PathFindingService.configure(this.cells, this.startIdx, this.finishIdx, this.width, this.height, this.searchSpeed);
     this.searchInProgress = true;
-    await this.PathFindingService.bfs();
-    this.enableMouseEvents();
-    this.searchInProgress = false;
+    await this.runSearch(this.selectedAlgorithm);
     if (this.PathFindingService.pathIsFound) {
-      this.visualizePath();
+      await this.PathFindingService.getPath();
     }
+    this.searchInProgress = false;
+    this.enableMouseEvents();
   }
 
-  visualizePath = () => {
-    if (this.searchInProgress)
-      return;
-
-    this.PathFindingService.getPath();
+  runSearch = (algorithm: string) => {
+    switch (algorithm) {
+      case Algorithms.A_STAR:
+        return this.PathFindingService.aStar();
+      case Algorithms.BFS:
+        return this.PathFindingService.bfs();
+      case Algorithms.DFS:
+        return this.PathFindingService.dfs();
+      case Algorithms.DIJKISTRA:
+        return this.PathFindingService.dijkistra();
+      case Algorithms.GREEDY:
+        return this.PathFindingService.greedy();
+      default:
+        throw new Error(`No Matching algorithm for ${algorithm}`);
+    }
   }
 
   clearBoard = () => {
@@ -96,10 +106,14 @@ export class BoardComponent implements AfterViewInit {
       cell.isVisited = false;
       cell.isWall = false;
       cell.parentIdx = -1;
+      cell.cost = undefined;
     });
   }
 
   clearWalls = () => {
+    if (this.searchInProgress)
+      return;
+
     this.cells.forEach(cell => {
       if (!cell.isWall)
         return;
@@ -112,17 +126,24 @@ export class BoardComponent implements AfterViewInit {
   }
 
   clearSearch = (): void => {
+    if (this.searchInProgress)
+      return;
+
     this.cells.forEach(cell => {
       if (cell.isVisited === true) {
         let cellEl = document.getElementById(cell.index.toString());
         cellEl!.style.animation = "";
         cell.isVisited = false;
         cell.parentIdx = -1;
+        cell.cost = undefined;
       }
     });
   }
 
   generateMaze = async (mazeType: MazeType, orientation: Orientation = Orientation.HORIZONTAL): Promise<void> => {
+    if (this.searchInProgress)
+      return;
+
     this.clearWalls();
     let wallsIdxToAnimate = this.mazeGeneratorService.generate(this.width, this.height, [this.startIdx, this.finishIdx], mazeType, orientation);
     for (let idx of wallsIdxToAnimate) {

@@ -5,6 +5,7 @@ export interface Cell {
   isStart?: boolean
   isFinish?: boolean
   isVisited?: boolean
+  cost?: number
 }
 
 export const defaultCell: Partial<Cell> = {
@@ -15,6 +16,6 @@ export const defaultCell: Partial<Cell> = {
 
 export enum SearchSpeed {
   Fast = 1,
-  Moderate = 50,
-  Slow = 100,
+  Moderate = 100,
+  Slow = 200,
 }

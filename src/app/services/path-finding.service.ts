@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Observable, Subject } from "rxjs";
 import { Cell, SearchSpeed } from "../models/cell";
+import { priorityQueue, PriorityQueueWithTieBreak } from "../utils/priority-queue";
 
 
 @Injectable({
@@ -68,6 +69,125 @@ export class PathFindingService {
     this.pathIsFound = cellIdx == this.finishIdx;
   }
 
+  aStar = async (): Promise<void> => {
+    let queue = new PriorityQueueWithTieBreak<number, number, number>();
+    queue.enqueueWithTieBreak(this.startIdx, 0, this.manhattanDistance(this.startIdx, this.finishIdx));
+    this.cells[this.startIdx].cost = 0;
+    let currentIdx = -1;
+    while (!queue.isEmpty()) {
+      currentIdx = queue.dequeue()!;
+      if (currentIdx === this.finishIdx)
+        break;
+      if (this.cells[currentIdx].isVisited === true)
+        continue;
+
+      this.cells[currentIdx].isVisited = true;
+      this._vistedCell.next(currentIdx);
+
+      let neighbours = this.getNeighbours(currentIdx);
+      neighbours.forEach(nIdx => {
+        if (this.cells[nIdx].isVisited === true)
+          return;
+
+        if (this.cells[nIdx].cost == null) {
+          this.cells[nIdx].cost = this.cells[currentIdx].cost! + 1;
+          this.cells[nIdx].parentIdx = currentIdx;
+        }
+        else {
+          if (this.cells[currentIdx].cost! + 1 < this.cells[nIdx].cost!) {
+            this.cells[nIdx].parentIdx = currentIdx;
+          }
+          this.cells[nIdx].cost = Math.min(this.cells[nIdx].cost!, this.cells[currentIdx].cost! + 1);
+        }
+
+        let hurestic = this.manhattanDistance(nIdx, this.finishIdx);
+        let fScore = this.cells[nIdx].cost! + hurestic;
+        queue.enqueueWithTieBreak(nIdx, fScore, hurestic);
+      });
+
+      await this.delay(this.searchSpeed);
+    }
+    this.pathIsFound = currentIdx == this.finishIdx;
+  }
+
+  dfs = () => {
+
+  }
+
+  greedy = async () => {
+    let queue = new priorityQueue<number, number>();
+    queue.enqueue(this.startIdx, 0);
+    this.cells[this.startIdx].cost = 0;
+    let currentIdx = -1;
+    while (!queue.isEmpty()) {
+      currentIdx = queue.dequeue()!;
+      if (currentIdx === this.finishIdx)
+        break;
+      if (this.cells[currentIdx].isVisited === true)
+        continue;
+
+      this.cells[currentIdx].isVisited = true;
+      this._vistedCell.next(currentIdx);
+
+      let neighbours = this.getNeighbours(currentIdx);
+      neighbours.forEach(nIdx => {
+        queue.enqueue(nIdx, this.manhattanDistance(nIdx, this.finishIdx));
+        if (this.cells[nIdx].cost == null){
+          this.cells[nIdx].cost = this.cells[currentIdx].cost! + 1;
+          this.cells[nIdx].parentIdx = currentIdx;
+        }
+        else{
+          if (this.cells[currentIdx].cost! + 1 < this.cells[nIdx].cost!){
+            this.cells[nIdx].parentIdx = currentIdx;
+          }
+          this.cells[nIdx].cost = Math.min(this.cells[nIdx].cost!, this.cells[currentIdx].cost! + 1);
+        }
+      });
+      await this.delay(this.searchSpeed);
+    }
+    this.pathIsFound = currentIdx == this.finishIdx;
+  }
+
+  dijkistra = async (): Promise<void> => {
+    let queue = new priorityQueue<number, number>();
+    queue.enqueue(this.startIdx, 0);
+    this.cells[this.startIdx].cost = 0;
+    let currentIdx = -1;
+    while (!queue.isEmpty()) {
+      currentIdx = queue.dequeue()!;
+      if (currentIdx === this.finishIdx)
+        break;
+      if (this.cells[currentIdx].isVisited === true)
+        continue;
+
+      this.cells[currentIdx].isVisited = true;
+      this._vistedCell.next(currentIdx);
+
+      let neighbours = this.getNeighbours(currentIdx);
+      neighbours.forEach(nIdx => {
+        // update the costs
+        if (this.cells[nIdx].cost == null) {
+          this.cells[nIdx].cost = this.cells[currentIdx].cost! + 1;
+        }
+        else {
+          this.cells[nIdx].cost = Math.min(this.cells[nIdx].cost!, this.cells[currentIdx].cost! + 1)
+        }
+        queue.enqueue(nIdx, this.cells[nIdx].cost!);
+        if (this.cells[nIdx].parentIdx === -1) {
+          this.cells[nIdx].parentIdx = currentIdx;
+        }
+      });
+      await this.delay(this.searchSpeed);
+    }
+    this.pathIsFound = currentIdx == this.finishIdx;
+  }
+
+  manhattanDistance = (cellIdx: number, targetIdx: number): number => {
+    let [r, c] = [Math.floor(cellIdx / this.width), cellIdx % this.width];
+    let [tr, tc] = [Math.floor(targetIdx / this.width), targetIdx % this.width];
+    return Math.abs(tr - r) + Math.abs(tc - c);
+  }
+
   getPath = async (): Promise<void> => {
     if (!this._isConfigured)
       throw new Error("The service in not well configured.");
@@ -92,7 +212,7 @@ export class PathFindingService {
     return cellsPathIdx.reverse();
   }
 
-  private getNeighbours = (cellIdx: number) : number[] => {
+  private getNeighbours = (cellIdx: number): number[] => {
     let x = Math.floor(cellIdx / this.width);
     let y = cellIdx % this.width;
     let neighboursIdx: number[] = [];
