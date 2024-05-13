@@ -21,8 +21,8 @@
         <app-dropdown [options]="speedOptions" (changed)="selectSpeed($event)"/>
       </div>
       <button (click)="visualize($event)">Visualize!</button>
-      <button (click)="clearBoard()">Clear board</button>
       <button (click)="clearSearch()">Clear Search</button>
+      <button (click)="clearBoard()">Clear board</button>
     </div>
 
     <!-- github link -->
@@ -35,4 +35,4 @@
   </div>
 
 </div>
-<board [searchSpeed]="selectedSpeed" #board></board>
+<board [searchSpeed]="selectedSpeed" [selectedAlgorithm]="selectedAlgorithm" #board></board>

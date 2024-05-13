@@ -16,10 +16,11 @@ export class AppComponent implements AfterViewInit {
   @ViewChild('board') board!: BoardComponent;
 
   algorithmOptions: Option[] = [
-    { id: 0, label: Algorithms.BFS },
-    { id: 1, label: Algorithms.DFS },
-    { id: 2, label: Algorithms.DIJKISTRA },
-    { id: 3, label: Algorithms.A_STAR }
+    { id: 0, label: Algorithms.A_STAR },
+    { id: 1, label: Algorithms.BFS },
+    { id: 2, label: Algorithms.DFS },
+    { id: 3, label: Algorithms.DIJKISTRA },
+    { id: 4, label: Algorithms.GREEDY }
   ];
 
   mazeOptions: Option[] = [
@@ -34,7 +35,7 @@ export class AppComponent implements AfterViewInit {
   ]
 
   title = 'path-search';
-  selectedAlgorithm: Option = this.algorithmOptions[0];
+  selectedAlgorithm: string = this.algorithmOptions[0].label;
   selectedMaze: Option = this.mazeOptions[0];
   selectedSpeed: SearchSpeed = this.speedOptions[0].id;
 
@@ -45,7 +46,7 @@ export class AppComponent implements AfterViewInit {
   }
 
   selectAlgorithm = (option: Option): void => {
-    this.selectedAlgorithm = option;
+    this.selectedAlgorithm = option.label;
   }
 
   selectMaze = (option: Option): void => {
