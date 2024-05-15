@@ -6,6 +6,8 @@
 
 ## Demo
 
+[Check out a live demo.](https://raef96.github.io/path-search/)
+
 ## Features
 
 - 2D board
