@@ -17,7 +17,7 @@ export class PathFindingService {
 
   cells: Cell[] = [];
   startIdx: number = -1;
-  finishIdx: number = -1;
+  targetIdx: number = -1;
   height: number = -1;
   width: number = -1;
   searchSpeed: SearchSpeed = SearchSpeed.Fast;
@@ -31,10 +31,10 @@ export class PathFindingService {
     this.path = this._path.asObservable();
   }
 
-  configure(cells: Cell[], startIdx: number, finishIdx: number, width: number, height: number, searchSpeed: SearchSpeed = SearchSpeed.Fast) {
+  configure(cells: Cell[], startIdx: number, targetIdx: number, width: number, height: number, searchSpeed: SearchSpeed = SearchSpeed.Fast) {
     this.cells = [...cells];
     this.startIdx = startIdx;
-    this.finishIdx = finishIdx;
+    this.targetIdx = targetIdx;
     this.height = height;
     this.width = width;
     this.searchSpeed = searchSpeed;
@@ -45,7 +45,7 @@ export class PathFindingService {
     this.cells != null &&
     this.cells.length >= 2 &&
     this.startIdx >= 0 &&
-    this.finishIdx >= 0 &&
+    this.targetIdx >= 0 &&
     this.width > 0 &&
     this.height > 0;
 
@@ -62,7 +62,7 @@ export class PathFindingService {
 
   private findPath = (): number[] => {
     let cellsPathIdx: number[] = [];
-    let cellIdx = this.finishIdx;
+    let cellIdx = this.targetIdx;
     let count = 0;
     while (cellIdx != this.startIdx && count < this.width * this.height) {
       cellsPathIdx.push(cellIdx);
@@ -100,12 +100,12 @@ export class PathFindingService {
   //#region algorithms
   aStar = async (): Promise<void> => {
     let queue = new PriorityQueueWithTieBreak<number, number, number>();
-    queue.enqueueWithTieBreak(this.startIdx, 0, this.manhattanDistance(this.startIdx, this.finishIdx));
+    queue.enqueueWithTieBreak(this.startIdx, 0, this.manhattanDistance(this.startIdx, this.targetIdx));
     this.cells[this.startIdx].cost = 0;
     let currentIdx = -1;
     while (!queue.isEmpty()) {
       currentIdx = queue.dequeue()!;
-      if (currentIdx === this.finishIdx)
+      if (currentIdx === this.targetIdx)
         break;
       if (this.cells[currentIdx].isVisited === true)
         continue;
@@ -129,14 +129,14 @@ export class PathFindingService {
           this.cells[nIdx].cost = Math.min(this.cells[nIdx].cost!, this.cells[currentIdx].cost! + 1);
         }
 
-        let hurestic = this.manhattanDistance(nIdx, this.finishIdx);
+        let hurestic = this.manhattanDistance(nIdx, this.targetIdx);
         let fScore = this.cells[nIdx].cost! + hurestic;
         queue.enqueueWithTieBreak(nIdx, fScore, hurestic);
       });
 
       await this.delay(this.searchSpeed);
     }
-    this.pathIsFound = currentIdx == this.finishIdx;
+    this.pathIsFound = currentIdx == this.targetIdx;
   }
 
   bfs = async (): Promise<void> => {
@@ -147,7 +147,7 @@ export class PathFindingService {
     let queue: number[] = [this.startIdx];
     while (queue.length > 0) {
       cellIdx = queue.shift()!;
-      if (cellIdx == this.finishIdx) break;
+      if (cellIdx == this.targetIdx) break;
       if (this.cells[cellIdx].isVisited == true) continue;
 
       this.cells[cellIdx].isVisited = true;
@@ -162,7 +162,7 @@ export class PathFindingService {
 
       await this.delay(this.searchSpeed);
     }
-    this.pathIsFound = cellIdx == this.finishIdx;
+    this.pathIsFound = cellIdx == this.targetIdx;
   }
 
   dfs = async () => {
@@ -173,7 +173,7 @@ export class PathFindingService {
     let currentIdx = this.startIdx;
     while (stack.length > 0) {
       currentIdx = stack.pop()!;
-      if (currentIdx === this.finishIdx)
+      if (currentIdx === this.targetIdx)
         break;
       if (this.cells[currentIdx].isVisited === true)
         continue;
@@ -190,7 +190,7 @@ export class PathFindingService {
       });
       await this.delay(this.searchSpeed);
     }
-    this.pathIsFound = currentIdx == this.finishIdx;
+    this.pathIsFound = currentIdx == this.targetIdx;
   }
 
   dijkistra = async (): Promise<void> => {
@@ -200,7 +200,7 @@ export class PathFindingService {
     let currentIdx = -1;
     while (!queue.isEmpty()) {
       currentIdx = queue.dequeue()!;
-      if (currentIdx === this.finishIdx)
+      if (currentIdx === this.targetIdx)
         break;
       if (this.cells[currentIdx].isVisited === true)
         continue;
@@ -224,7 +224,7 @@ export class PathFindingService {
       });
       await this.delay(this.searchSpeed);
     }
-    this.pathIsFound = currentIdx == this.finishIdx;
+    this.pathIsFound = currentIdx == this.targetIdx;
   }
 
   greedy = async () => {
@@ -234,7 +234,7 @@ export class PathFindingService {
     let currentIdx = -1;
     while (!queue.isEmpty()) {
       currentIdx = queue.dequeue()!;
-      if (currentIdx === this.finishIdx)
+      if (currentIdx === this.targetIdx)
         break;
       if (this.cells[currentIdx].isVisited === true)
         continue;
@@ -244,7 +244,7 @@ export class PathFindingService {
 
       let neighbours = this.getNeighbours(currentIdx);
       neighbours.forEach(nIdx => {
-        queue.enqueue(nIdx, this.manhattanDistance(nIdx, this.finishIdx));
+        queue.enqueue(nIdx, this.manhattanDistance(nIdx, this.targetIdx));
         if (this.cells[nIdx].cost == null) {
           this.cells[nIdx].cost = this.cells[currentIdx].cost! + 1;
           this.cells[nIdx].parentIdx = currentIdx;
@@ -258,7 +258,7 @@ export class PathFindingService {
       });
       await this.delay(this.searchSpeed);
     }
-    this.pathIsFound = currentIdx == this.finishIdx;
+    this.pathIsFound = currentIdx == this.targetIdx;
   }
   //#endregion
 }
