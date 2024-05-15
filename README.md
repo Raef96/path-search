@@ -60,3 +60,4 @@
 
 ## License
 
+See the [MIT LICENSE](LICENSE).
