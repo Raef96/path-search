@@ -12,7 +12,6 @@ export class PathFindingService {
   private _vistedCell: Subject<number>;
   private _isConfigured: boolean = false;
 
-
   path: Observable<number>;
   visitedCell: Observable<number>;
 
@@ -33,42 +32,72 @@ export class PathFindingService {
   }
 
   configure(cells: Cell[], startIdx: number, finishIdx: number, width: number, height: number, searchSpeed: SearchSpeed = SearchSpeed.Fast) {
-    this.cells = cells;
+    this.cells = [...cells];
     this.startIdx = startIdx;
     this.finishIdx = finishIdx;
     this.height = height;
     this.width = width;
     this.searchSpeed = searchSpeed;
-
     this._isConfigured = this.isConfigured();
   }
 
-  bfs = async (): Promise<void> => {
+  private isConfigured = (): boolean =>
+    this.cells != null &&
+    this.cells.length >= 2 &&
+    this.startIdx >= 0 &&
+    this.finishIdx >= 0 &&
+    this.width > 0 &&
+    this.height > 0;
+
+  getPath = async (): Promise<void> => {
     if (!this._isConfigured)
       throw new Error("The service in not well configured.");
 
-    let cellIdx = -1;
-    let queue: number[] = [this.startIdx];
-    while (queue.length > 0) {
-      cellIdx = queue.shift()!;
-      if (cellIdx == this.finishIdx) break;
-      if (this.cells[cellIdx].isVisited == true) continue;
-
-      this.cells[cellIdx].isVisited = true;
-      this._vistedCell.next(cellIdx);
-
-      let neighboursIdx = this.getNeighbours(cellIdx);
-      for (let nIdx of neighboursIdx) {
-        queue.push(nIdx);
-        if (this.cells[nIdx].parentIdx == -1)
-          this.cells[nIdx].parentIdx = cellIdx;
-      }
-
-      await this.delay(this.searchSpeed);
+    let path = this.findPath();
+    for (let cellIdx of path) {
+      this._path.next(cellIdx);
+      await this.delay(100);
     }
-    this.pathIsFound = cellIdx == this.finishIdx;
   }
 
+  private findPath = (): number[] => {
+    let cellsPathIdx: number[] = [];
+    let cellIdx = this.finishIdx;
+    let count = 0;
+    while (cellIdx != this.startIdx && count < this.width * this.height) {
+      cellsPathIdx.push(cellIdx);
+      cellIdx = this.cells[cellIdx].parentIdx!;
+      count++;
+    }
+    return cellsPathIdx.reverse();
+  }
+
+  private getNeighbours = (cellIdx: number): number[] => {
+    let x = Math.floor(cellIdx / this.width);
+    let y = cellIdx % this.width;
+    let neighboursIdx: number[] = [];
+
+    if (x - 1 >= 0 && !this.cells[(x - 1) * this.width + y].isWall) // up
+      neighboursIdx.push((x - 1) * this.width + y);
+    if (y + 1 < this.width && !this.cells[cellIdx + 1].isWall) // right
+      neighboursIdx.push(cellIdx + 1);
+    if (x + 1 < this.height && !this.cells[(x + 1) * this.width + y].isWall) // down
+      neighboursIdx.push((x + 1) * this.width + y);
+    if (y - 1 >= 0 && !this.cells[cellIdx - 1].isWall) // left
+      neighboursIdx.push(cellIdx - 1);
+
+    return neighboursIdx;
+  }
+
+  manhattanDistance = (cellIdx: number, targetIdx: number): number => {
+    let [r, c] = [Math.floor(cellIdx / this.width), cellIdx % this.width];
+    let [tr, tc] = [Math.floor(targetIdx / this.width), targetIdx % this.width];
+    return Math.abs(tr - r) + Math.abs(tc - c);
+  }
+
+  private delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+  //#region algorithms
   aStar = async (): Promise<void> => {
     let queue = new PriorityQueueWithTieBreak<number, number, number>();
     queue.enqueueWithTieBreak(this.startIdx, 0, this.manhattanDistance(this.startIdx, this.finishIdx));
@@ -110,17 +139,40 @@ export class PathFindingService {
     this.pathIsFound = currentIdx == this.finishIdx;
   }
 
-  dfs = () => {
+  bfs = async (): Promise<void> => {
+    if (!this._isConfigured)
+      throw new Error("The service in not well configured.");
 
+    let cellIdx = -1;
+    let queue: number[] = [this.startIdx];
+    while (queue.length > 0) {
+      cellIdx = queue.shift()!;
+      if (cellIdx == this.finishIdx) break;
+      if (this.cells[cellIdx].isVisited == true) continue;
+
+      this.cells[cellIdx].isVisited = true;
+      this._vistedCell.next(cellIdx);
+
+      let neighboursIdx = this.getNeighbours(cellIdx);
+      for (let nIdx of neighboursIdx) {
+        queue.push(nIdx);
+        if (this.cells[nIdx].parentIdx == -1)
+          this.cells[nIdx].parentIdx = cellIdx;
+      }
+
+      await this.delay(this.searchSpeed);
+    }
+    this.pathIsFound = cellIdx == this.finishIdx;
   }
 
-  greedy = async () => {
-    let queue = new priorityQueue<number, number>();
-    queue.enqueue(this.startIdx, 0);
-    this.cells[this.startIdx].cost = 0;
-    let currentIdx = -1;
-    while (!queue.isEmpty()) {
-      currentIdx = queue.dequeue()!;
+  dfs = async () => {
+    if (!this._isConfigured)
+      throw new Error("The service in not well configured.");
+
+    let stack = [this.startIdx];
+    let currentIdx = this.startIdx;
+    while (stack.length > 0) {
+      currentIdx = stack.pop()!;
       if (currentIdx === this.finishIdx)
         break;
       if (this.cells[currentIdx].isVisited === true)
@@ -131,17 +183,10 @@ export class PathFindingService {
 
       let neighbours = this.getNeighbours(currentIdx);
       neighbours.forEach(nIdx => {
-        queue.enqueue(nIdx, this.manhattanDistance(nIdx, this.finishIdx));
-        if (this.cells[nIdx].cost == null){
-          this.cells[nIdx].cost = this.cells[currentIdx].cost! + 1;
-          this.cells[nIdx].parentIdx = currentIdx;
-        }
-        else{
-          if (this.cells[currentIdx].cost! + 1 < this.cells[nIdx].cost!){
-            this.cells[nIdx].parentIdx = currentIdx;
-          }
-          this.cells[nIdx].cost = Math.min(this.cells[nIdx].cost!, this.cells[currentIdx].cost! + 1);
-        }
+        if (this.cells[nIdx].isVisited === true)
+          return;
+        stack.push(nIdx);
+        this.cells[nIdx].parentIdx = currentIdx;
       });
       await this.delay(this.searchSpeed);
     }
@@ -182,60 +227,38 @@ export class PathFindingService {
     this.pathIsFound = currentIdx == this.finishIdx;
   }
 
-  manhattanDistance = (cellIdx: number, targetIdx: number): number => {
-    let [r, c] = [Math.floor(cellIdx / this.width), cellIdx % this.width];
-    let [tr, tc] = [Math.floor(targetIdx / this.width), targetIdx % this.width];
-    return Math.abs(tr - r) + Math.abs(tc - c);
-  }
+  greedy = async () => {
+    let queue = new priorityQueue<number, number>();
+    queue.enqueue(this.startIdx, 0);
+    this.cells[this.startIdx].cost = 0;
+    let currentIdx = -1;
+    while (!queue.isEmpty()) {
+      currentIdx = queue.dequeue()!;
+      if (currentIdx === this.finishIdx)
+        break;
+      if (this.cells[currentIdx].isVisited === true)
+        continue;
 
-  getPath = async (): Promise<void> => {
-    if (!this._isConfigured)
-      throw new Error("The service in not well configured.");
+      this.cells[currentIdx].isVisited = true;
+      this._vistedCell.next(currentIdx);
 
-    let path = this.findPath();
-    for (let cellIdx of path) {
-      this._path.next(cellIdx);
-      await this.delay(100);
+      let neighbours = this.getNeighbours(currentIdx);
+      neighbours.forEach(nIdx => {
+        queue.enqueue(nIdx, this.manhattanDistance(nIdx, this.finishIdx));
+        if (this.cells[nIdx].cost == null) {
+          this.cells[nIdx].cost = this.cells[currentIdx].cost! + 1;
+          this.cells[nIdx].parentIdx = currentIdx;
+        }
+        else {
+          if (this.cells[currentIdx].cost! + 1 < this.cells[nIdx].cost!) {
+            this.cells[nIdx].parentIdx = currentIdx;
+          }
+          this.cells[nIdx].cost = Math.min(this.cells[nIdx].cost!, this.cells[currentIdx].cost! + 1);
+        }
+      });
+      await this.delay(this.searchSpeed);
     }
+    this.pathIsFound = currentIdx == this.finishIdx;
   }
-
-  private findPath = (): number[] => {
-    let cellsPathIdx: number[] = [];
-    let cellIdx = this.finishIdx;
-    let count = 0;
-    while (cellIdx != this.startIdx && count < this.width * this.height) {
-      cellsPathIdx.push(cellIdx);
-      cellIdx = this.cells[cellIdx].parentIdx!;
-      count++;
-    }
-
-    return cellsPathIdx.reverse();
-  }
-
-  private getNeighbours = (cellIdx: number): number[] => {
-    let x = Math.floor(cellIdx / this.width);
-    let y = cellIdx % this.width;
-    let neighboursIdx: number[] = [];
-
-    if (x - 1 >= 0 && !this.cells[(x - 1) * this.width + y].isWall) // up
-      neighboursIdx.push((x - 1) * this.width + y);
-    if (y + 1 < this.width && !this.cells[cellIdx + 1].isWall) // right
-      neighboursIdx.push(cellIdx + 1);
-    if (x + 1 < this.height && !this.cells[(x + 1) * this.width + y].isWall) // down
-      neighboursIdx.push((x + 1) * this.width + y);
-    if (y - 1 >= 0 && !this.cells[cellIdx - 1].isWall) // left
-      neighboursIdx.push(cellIdx - 1);
-
-    return neighboursIdx;
-  }
-
-  private isConfigured = (): boolean =>
-    this.cells != null &&
-    this.cells.length >= 2 &&
-    this.startIdx >= 0 &&
-    this.finishIdx >= 0 &&
-    this.width > 0 &&
-    this.height > 0;
-
-  private delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  //#endregion
 }

@@ -23,13 +23,14 @@ export class BoardComponent implements AfterViewInit {
 
   height: number = 24;
   width: number = 58;
-  startIdx: number = 0;
-  finishIdx: number = 181;
+  startIdx: number = 707;
+  targetIdx: number = 742;
   cells: Cell[] = Array<Cell>(CELLS_COUNT);
 
   private isMouseDown: boolean = false;
   private isDragging = false;
   private searchInProgress: boolean = false;
+  private mazeGenerationInProgress: boolean = false;
 
   constructor(
     private PathFindingService: PathFindingService,
@@ -37,7 +38,7 @@ export class BoardComponent implements AfterViewInit {
     let parentIdx = -1;
     this.cells = Array.from({ length: CELLS_COUNT }, (_, index) => ({ ...defaultCell, parentIdx, index }));
     this.cells[this.startIdx].isStart = true;
-    this.cells[this.finishIdx].isFinish = true;
+    this.cells[this.targetIdx].isFinish = true;
   }
 
   ngAfterViewInit(): void {
@@ -55,7 +56,7 @@ export class BoardComponent implements AfterViewInit {
     });
 
     this.PathFindingService.path.subscribe((cellIdx) => {
-      if (cellIdx == this.finishIdx)
+      if (cellIdx == this.targetIdx)
         return;
 
       var cell = document.getElementById(cellIdx.toString());
@@ -64,12 +65,12 @@ export class BoardComponent implements AfterViewInit {
   }
 
   visualizeSearch = async (): Promise<void> => {
-    if (this.searchInProgress)
+    if (this.actionsInProgress())
       return;
 
     this.clearSearch();
     this.disableMouseEvents();
-    this.PathFindingService.configure(this.cells, this.startIdx, this.finishIdx, this.width, this.height, this.searchSpeed);
+    this.PathFindingService.configure(this.cells, this.startIdx, this.targetIdx, this.width, this.height, this.searchSpeed);
     this.searchInProgress = true;
     await this.runSearch(this.selectedAlgorithm);
     if (this.PathFindingService.pathIsFound) {
@@ -97,7 +98,7 @@ export class BoardComponent implements AfterViewInit {
   }
 
   clearBoard = () => {
-    if (this.searchInProgress)
+    if (this.actionsInProgress())
       return;
 
     this.cells.forEach(cell => {
@@ -111,7 +112,7 @@ export class BoardComponent implements AfterViewInit {
   }
 
   clearWalls = () => {
-    if (this.searchInProgress)
+    if (this.actionsInProgress())
       return;
 
     this.cells.forEach(cell => {
@@ -126,7 +127,7 @@ export class BoardComponent implements AfterViewInit {
   }
 
   clearSearch = (): void => {
-    if (this.searchInProgress)
+    if (this.actionsInProgress())
       return;
 
     this.cells.forEach(cell => {
@@ -141,20 +142,24 @@ export class BoardComponent implements AfterViewInit {
   }
 
   generateMaze = async (mazeType: MazeType, orientation: Orientation = Orientation.HORIZONTAL): Promise<void> => {
-    if (this.searchInProgress)
+    if (this.actionsInProgress())
       return;
 
-    this.clearWalls();
-    let wallsIdxToAnimate = this.mazeGeneratorService.generate(this.width, this.height, [this.startIdx, this.finishIdx], mazeType, orientation);
+    this.clearBoard();
+    this.disableMouseEvents();
+    this.mazeGenerationInProgress = true;
+    let wallsIdxToAnimate = this.mazeGeneratorService.generate(this.width, this.height, [this.startIdx, this.targetIdx], mazeType, orientation);
     for (let idx of wallsIdxToAnimate) {
       this.cells[idx].isWall = true;
       await this.delay(5);
       let el = document.getElementById(idx.toString());
       el!.style.animation = 'wall-animation 0.4s forwards';
     }
+    this.mazeGenerationInProgress = false;
+    this.enableMouseEvents();
   }
 
-  private delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  actionsInProgress = () => this.searchInProgress || this.mazeGenerationInProgress;
 
   setBoardDimensions = () => {
     var boardEl = document.getElementsByClassName("board")[0] as HTMLElement;
@@ -162,6 +167,8 @@ export class BoardComponent implements AfterViewInit {
     this.height = Math.floor(boardEl.offsetHeight / CELL_HEIGHT);
     console.log(boardEl, boardEl.offsetWidth / CELL_WIDTH, this.width, this.height);
   }
+
+  private delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   //#region : Mouse Events
   initMouseEvents = () => {
@@ -175,7 +182,7 @@ export class BoardComponent implements AfterViewInit {
 
   private mouseDownEvent = (cell: HTMLElement) => {
     let isStartPoint = +cell.id === this.startIdx;
-    let isFinishPoint = +cell.id === this.finishIdx;
+    let isFinishPoint = +cell.id === this.targetIdx;
     if (isStartPoint || isFinishPoint)  // we dont consider as a click down because it is handled by cdk drop library
       return;
 
@@ -194,7 +201,7 @@ export class BoardComponent implements AfterViewInit {
     if (this.isDragging) // the start/finish point is moving
       return;
 
-    if (+cell.id === this.startIdx || +cell.id === this.finishIdx)
+    if (+cell.id === this.startIdx || +cell.id === this.targetIdx)
       return;
 
     if (this.isMouseDown) {
@@ -248,7 +255,7 @@ export class BoardComponent implements AfterViewInit {
       this.cells[currentIdx].isStart = true;
     }
     else {
-      this.finishIdx = currentIdx;
+      this.targetIdx = currentIdx;
       this.cells[previousIdx].isFinish = false;
       this.cells[currentIdx].isFinish = true;
     }
@@ -258,7 +265,7 @@ export class BoardComponent implements AfterViewInit {
   enterPredicate = (_: CdkDrag, drop: CdkDropList) => {
     let destisnationCellIdx = drop.data;
     return destisnationCellIdx != this.startIdx &&
-      destisnationCellIdx != this.finishIdx &&
+      destisnationCellIdx != this.targetIdx &&
       this.cells[destisnationCellIdx].isWall == false;
   }
   //#endregion
