@@ -62,7 +62,7 @@ export class priorityQueue<TElement, TPriority> implements IPriorityQueue<TEleme
   }
 
   count = (): number => this.data.length;
-  isEmpty = (): boolean => this.data.length == 0
+  isEmpty = (): boolean => this.data.length == 0;
 }
 
 export class PriorityQueueWithTieBreak<TElement, TPriority, TTieBreak> extends priorityQueue<TElement, TPriority>

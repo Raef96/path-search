@@ -43,6 +43,9 @@ export class AppComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    document.getElementById("refresh")!.onclick = () => {
+      window.location.reload();
+    }
   }
 
   selectAlgorithm = (option: Option): void => {
