@@ -1,27 +1,63 @@
-# PathSearch
+## Introduction
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.0.4.
+- A pathfinding visualization tool for demonstrating pathfinding algorithms in action.
+- This project is inspired by [@clementmihailescu](https://github.com/clementmihailescu) after watching his YouTube video ([Clément Mihailescu's video](https://www.youtube.com/watch?v=n4t_-NjY_Sg)) on pathfinding visualization.
+- This is my personal attempt at creating a pathfinding visualization tool.
 
-## Development server
+## Demo
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Features
 
-## Code scaffolding
+- [x] 2D board
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+  - [x] Draw custom walls using the mouse
+  - [x] Drag the start and target cells to new positions
+  - [x] Responsive board with animations
+  - [x] Traverse in four directions
+  - [x] Show the visited cells while exploring the board
+  - [ ] Add lines to clearly indicate path taken
 
-## Build
+- [x] Search Algorithms
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+  - [x] A\* Algorithm 
+  - [x] Breadth-First Search
+  - [x] Depth-First Search
+  - [x] Dijkstra\'s Algorithm
+  - [x] Greedy Best-First Search
 
-## Running unit tests
+- [x] Maze Generation Algorithms
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+  - [x] Basic Random Method
+  - [x] Recursive Division Method
 
-## Running end-to-end tests
+- [x] Prevent unintended interactions by restricting user inputs during different phases.
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
 
-## Further help
+## Installation
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+1. Install and use the correct version of Node (^21.7.2)
+
+2. Clone this repository
+
+   ```sh
+   git clone https://github.com/Raef96/path-search.git
+   ```
+
+3. Navigate into the project directory
+
+4. Install dependencies
+
+   ```sh
+   npm install
+   ```
+
+5. Start the development server
+
+   ```sh
+   npm start
+   ```
+
+6. Open [http://localhost:4200](http://localhost:4200) to view it in your browser
+
+## License
+
