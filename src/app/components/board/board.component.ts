@@ -123,15 +123,20 @@ export class BoardComponent implements AfterViewInit {
       cell.isVisited = false;
       cell.isWall = false;
       cell.parentIdx = -1;
+      cell.cost = undefined;
     });
   }
 
   clearSearch = (): void => {
     if (this.actionsInProgress())
       return;
-
     this.cells.forEach(cell => {
-      if (cell.isVisited === true) {
+      if (cell.isWall) {
+        cell.parentIdx = -1;
+        cell.cost = undefined;
+        cell.isVisited = false;
+      }
+      else if (cell.isVisited === true || cell.cost != null || cell.parentIdx != -1) {
         let cellEl = document.getElementById(cell.index.toString());
         cellEl!.style.animation = "";
         cell.isVisited = false;
@@ -139,6 +144,7 @@ export class BoardComponent implements AfterViewInit {
         cell.cost = undefined;
       }
     });
+
   }
 
   generateMaze = async (mazeType: MazeType, orientation: Orientation = Orientation.HORIZONTAL): Promise<void> => {
