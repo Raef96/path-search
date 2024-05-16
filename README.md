@@ -1,4 +1,4 @@
-# ![logo](https://github.com/Raef96/path-search/blob/main/public/images/favicon.ico) Path Search
+# ![logo](https://github.com/Raef96/path-search/blob/main/public/images/favicon.ico) <div style="margin-bottom: 50px">Path Search<div>
 
 <div style="display: flex; align-items: center;">
   <img src="https://github.com/Raef96/path-search/blob/main/public/images/favicon.ico" alt="logo" style="width: 20px; margin-right: 20px;">
