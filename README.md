@@ -1,7 +1,4 @@
-# ![logo](https://github.com/Raef96/path-search/blob/main/public/images/favicon.ico)
-<p align="center">
-  <img src="https://github.com/Raef96/path-search/blob/main/public/images/favicon.ico" alt="Logo" width="100" height="100"> Path-Search
-</p>
+#<img src="https://github.com/Raef96/path-search/blob/main/public/images/favicon.ico" alt="Logo" width="100" height="100" align="left"> Path-Search
 
 A pathfinding and maze generation visualizer built using Angular framework.</p>
 
