@@ -1,11 +1,6 @@
-# ![logo](https://github.com/Raef96/path-search/blob/main/public/images/favicon.ico) Path Search
+## <img src="https://github.com/Raef96/path-search/blob/main/public/images/favicon.ico" alt="Logo" width="30" height="30" align="left"> Path-Search
 
-<div style="display: flex; align-items: center;">
-  <img src="https://github.com/Raef96/path-search/blob/main/public/images/favicon.ico" alt="" style="width: 150px; margin-right: 20px;">
-  <p>A pathfinding and maze generation visualizer built using Angular framework.</p>
-</div>
-
-
+A pathfinding and maze generation visualizer built using Angular framework.</p>
 
 ## Introduction
 
