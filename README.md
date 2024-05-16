@@ -1,3 +1,7 @@
+# ![logo](https://github.com/Raef96/path-search/blob/main/public/images/favicon.ico) Path Search
+
+A pathfinding and maze generation visualizer built using Angular framework
+
 ## Introduction
 
 - A pathfinding visualization tool for demonstrating pathfinding algorithms in action.
